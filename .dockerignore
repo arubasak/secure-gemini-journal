@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+tests
+docs
+*.md
+deploy.sh
+deploy.ps1
+scripts
+firebase.json
+firestore.rules
+firestore.indexes.json
+.firebase

@@ -1,0 +1,28 @@
+{
+  "name": "secure-personal-gemini-journal",
+  "version": "1.0.0",
+  "description": "Secure Personal Gemini Journal - Firebase Auth + Gemini API + Cloud Firestore + Secret Manager on Cloud Run, with Mood Compass insights, location-aware entries and a role-based admin dashboard.",
+  "main": "server/index.js",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --env-file=.env --watch server/index.js",
+    "test": "node --test",
+    "rules:deploy": "npx --yes firebase-tools@latest deploy --only firestore:rules",
+    "admin:grant": "node scripts/grant-admin.js",
+    "deploy": "bash deploy.sh"
+  },
+  "dependencies": {
+    "@google-cloud/secret-manager": "^7.0.0",
+    "@google/genai": "^2.21.0",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "firebase-admin": "^14.3.0",
+    "helmet": "^8.3.0"
+  },
+  "license": "MIT"
+}

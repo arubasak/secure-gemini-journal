@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="A private AI journal. Sign in, write, and reflect with Gemini. Your entries are isolated per user and never shared.">
+  <title>Gemini Journal</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%236c5ce7'/%3E%3Cpath d='M18 44V20h6l8 14 8-14h6v24h-6V31l-8 13-8-13v13z' fill='white'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- Loading -->
+  <div id="loading" class="screen center" aria-live="polite">
+    <div class="spinner" role="img" aria-label="Loading"></div>
+  </div>
+
+  <!-- Sign in -->
+  <section id="auth-screen" class="screen center" hidden>
+    <div class="auth-card">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">GJ</span>
+        <span class="brand-name">Gemini Journal</span>
+      </div>
+      <h1>A private place to think.</h1>
+      <p class="muted">Write freely. Reflect with Gemini. Your words stay yours: every entry is stored in your own isolated space and never shared.</p>
+
+      <button id="google-signin" class="btn btn-primary btn-block" type="button">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.1C1 16.4 0 20.1 0 24s1 7.6 2.6 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.3 0 11.7-2.1 15.6-5.7l-7.5-5.8c-2.1 1.4-4.8 2.3-8.1 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="divider" role="separator"><span>or use email</span></div>
+
+      <form id="email-form" novalidate>
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" required placeholder="you@example.com">
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" required minlength="8" placeholder="At least 8 characters">
+        <div class="row">
+          <button class="btn btn-block" type="submit" id="email-signin">Sign in</button>
+          <button class="btn btn-ghost btn-block" type="button" id="email-signup">Create account</button>
+        </div>
+        <button class="link" type="button" id="forgot">Forgot your password?</button>
+      </form>
+      <p id="auth-error" class="error" role="alert"></p>
+
+      <ul class="trust" aria-label="Security features">
+        <li>Firebase Authentication</li>
+        <li>Per-user Firestore isolation</li>
+        <li>Keys in Secret Manager</li>
+        <li>Runs on Cloud Run</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- App shell -->
+  <div id="shell" hidden>
+    <header class="topbar">
+      <a class="brand" href="#/journal">
+        <span class="brand-mark" aria-hidden="true">GJ</span>
+        <span class="brand-name">Gemini Journal</span>
+      </a>
+      <nav class="tabs" aria-label="Main">
+        <a href="#/journal" data-tab="journal">Journal</a>
+        <a href="#/insights" data-tab="insights">Insights</a>
+        <a href="#/ask" data-tab="ask">Ask</a>
+        <a href="#/account" data-tab="account">Account</a>
+        <a href="#/admin" data-tab="admin" id="tab-admin" hidden>Admin</a>
+      </nav>
+      <div class="user-chip">
+        <img id="avatar" alt="" hidden>
+        <span id="user-name" class="muted"></span>
+        <button id="signout" class="btn btn-ghost btn-sm" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <main id="main">
+      <section id="view-journal" class="view journal" hidden>
+        <aside class="entry-list" aria-label="Entries">
+          <div class="list-head">
+            <h2>Entries</h2>
+            <a class="btn btn-primary btn-sm" href="#/new">+ New entry</a>
+          </div>
+          <ul id="entries" class="entries"></ul>
+        </aside>
+        <div id="entry-pane" class="entry-pane"></div>
+      </section>
+
+      <section id="view-insights" class="view" hidden>
+        <div class="container" id="insights-root"></div>
+      </section>
+
+      <section id="view-ask" class="view" hidden>
+        <div class="container narrow" id="ask-root"></div>
+      </section>
+
+      <section id="view-account" class="view" hidden>
+        <div class="container narrow" id="account-root"></div>
+      </section>
+
+      <section id="view-admin" class="view" hidden>
+        <div class="container" id="admin-root"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <dialog id="confirm-dialog">
+    <form method="dialog">
+      <h3 id="confirm-title">Are you sure?</h3>
+      <p id="confirm-text" class="muted"></p>
+      <input id="confirm-input" hidden autocomplete="off">
+      <div class="row end">
+        <button class="btn btn-ghost" value="cancel" type="submit">Cancel</button>
+        <button class="btn btn-danger" value="ok" type="submit" id="confirm-ok">Confirm</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

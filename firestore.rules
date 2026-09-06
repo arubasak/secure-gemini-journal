@@ -1,0 +1,67 @@
+rules_version = '2';
+
+// Secure Personal Gemini Journal - Firestore security rules
+//
+// Design:
+//  * The web app talks ONLY to the Cloud Run backend, which uses the Admin SDK
+//    (rules do not apply to Admin SDK traffic). The backend derives the user id
+//    from a verified Firebase ID token on every request.
+//  * These rules are defence in depth for any direct client-SDK access:
+//      - a signed-in user may READ only their own subtree (users/{uid}/**)
+//      - NOBODY may write from the client; all writes go through the validated API
+//      - the `meta` (aggregate counters) and `audit` collections are server-only
+//  * Result: zero cross-user leakage even if the API were bypassed.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null && request.auth.uid != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ---- per-user data --------------------------------------------------
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+
+      match /entries/{entryId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+
+        match /messages/{messageId} {
+          allow read: if isOwner(uid);
+          allow write: if false;
+        }
+      }
+
+      match /insights/{insightId} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+
+      // Notification webhook settings: readable/writable ONLY through the API,
+      // never directly (the webhook URL is a credential).
+      match /private/{docId} {
+        allow read, write: if false;
+      }
+    }
+
+    // ---- server-only collections ---------------------------------------
+    match /meta/{doc} {
+      allow read, write: if false;
+    }
+
+    match /audit/{doc} {
+      allow read, write: if false;
+    }
+
+    // ---- everything else: deny ------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
