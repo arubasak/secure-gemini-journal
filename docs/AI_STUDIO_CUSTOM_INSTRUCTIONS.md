@@ -2,7 +2,6 @@
 
 This is the security-engineering system prompt configured in Google AI Studio (**Settings → Custom instructions** / the *System instructions* panel) before any code for this project was generated. Every feature in this repository was built under these directives; the **integration addenda** at the bottom were appended before each new integration (Maps, RBAC, webhooks), as the Ideathon brief recommends.
 
-Copy everything between the fences into AI Studio.
 
 ---
 
